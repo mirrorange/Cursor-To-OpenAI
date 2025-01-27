@@ -39,11 +39,12 @@ message ChatMessage {
   // repeated FileContent files = 1;
   repeated UserMessage messages = 2;
   Instructions instructions = 4;
-  string projectPath = 5;
   Model model = 7;
-  string requestId = 9;
-  string summary = 11; // 或许是空的，描述会话做了什么事情，但是不是标题 或许可以当作额外的设定来用
-  string conversationId = 15; // 又来一个uuid
+  int32 unknown1 = 13;
+  string conversationId = 15;
+  int32 unknown2 = 16;
+  int32 unknown3 = 29;
+  int32 unknown4 = 31;
 }
 
 message ResMessage {

@@ -20,9 +20,9 @@ app.post('/v1/chat/completions', async (req, res) => {
   try {
     const { model, messages, stream = false } = req.body;
     let bearerToken = req.headers.authorization?.replace('Bearer ', '');
-
     const keys = bearerToken.split(',').map((key) => key.trim());
-    // Random choose one key to use
+
+    // Randomly select one key to use
     let authToken = keys[Math.floor(Math.random() * keys.length)]
 
     if (authToken && authToken.includes('%3A%3A')) {
@@ -44,26 +44,54 @@ app.post('/v1/chat/completions', async (req, res) => {
       ?? process.env['x-cursor-checksum'] 
       ?? generateCursorChecksum(authToken.trim());
 
+    const sessionid = uuidv4()
+    const clientKey = '???'   // 256-bit hex value, not sure what's that
+
+    // Request the CheckFeatureStatus before StreamChat. It may helps to bypass the account ban.
+    // If you remove the await here, it will improve performance, but I'm not sure if it will cause your account to be banned.
+    const checkFeatureStatusResponse = await fetch("https://api2.cursor.sh/aiserver.v1.AiService/CheckFeatureStatus", {
+      method: 'POST',
+      headers: {
+        'accept-encoding': 'gzip',
+        'authorization': `Bearer ${authToken}`,
+        'connect-protocol-version': '1',
+        'content-type': 'application/proto',
+        'user-agent': 'connect-es/1.6.1',
+        //'x-client-key': clientKey,
+        'x-cursor-checksum': checksum,
+        'x-cursor-client-version': '0.45.3',
+        'x-cursor-timezone': 'Asia/Shanghai',
+        'x-ghost-mode': 'false',
+        'x-session-id': sessionid,
+        'Host': 'api2.cursor.sh',
+      },
+      // 0x0A 0x1D cppExistingUserMarketingPopup
+      body: Buffer.from('0A1D6370704578697374696E67557365724D61726B6574696E67506F707570', 'hex').toString('utf8')
+    })
+
     const response = await fetch('https://api2.cursor.sh/aiserver.v1.AiService/StreamChat', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/connect+proto',
-        authorization: `Bearer ${authToken}`,
-        'connect-accept-encoding': 'gzip,br',
+        'authorization': `Bearer ${authToken}`,
+        'connect-accept-encoding': 'gzip',
+        'connect-content-encoding': 'gzip',
         'connect-protocol-version': '1',
-        'user-agent': 'connect-es/1.4.0',
+        'content-type': 'application/connect+proto',
+        'user-agent': 'connect-es/1.6.1',
         'x-amzn-trace-id': `Root=${uuidv4()}`,
+        //'x-client-key': clientKey,
         'x-cursor-checksum': checksum,
-        'x-cursor-client-version': '0.42.3',
+        'x-cursor-client-version': '0.45.3',
         'x-cursor-timezone': 'Asia/Shanghai',
         'x-ghost-mode': 'false',
         'x-request-id': uuidv4(),
-        Host: 'api2.cursor.sh',
+        'x-session-id': sessionid,
+        'Host': 'api2.cursor.sh',
       },
       body: hexData,
       timeout: {
-        connect: 5000,    // 连接超时 5 秒
-        read: 30000       // 读取超时 30 秒
+        connect: 5000,
+        read: 30000
       }
     });
 
@@ -76,7 +104,13 @@ app.post('/v1/chat/completions', async (req, res) => {
 
       try {
         for await (const chunk of response.body) {
-          const text = await chunkToUtf8String(chunk);
+          let text = await chunkToUtf8String(chunk);
+
+          // Direct pass the value to downstream if fails to parse the chunk
+          //if (text.length == 0){
+          //  const textTostring = Buffer.from(chunk, 'hex').toString('utf8');
+          //  console.log(textTostring)
+          //}
 
           if (text.length > 0) {
             res.write(

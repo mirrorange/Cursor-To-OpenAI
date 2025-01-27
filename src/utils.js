@@ -17,14 +17,15 @@ async function stringToHex(messages, modelName) {
     instructions: {
       instruction: 'Always respond in 中文',
     },
-    projectPath: '/path/to/project',
     model: {
       name: modelName,
       empty: '',
     },
-    requestId: uuidv4(),
-    summary: '',
+    unknown1: 1,
     conversationId: uuidv4(),
+    unknown2: 1,
+    unknown3: 1,
+    unknown4: 0,
   };
   const errMsg = $root.ChatMessage.verify(message);
   if (errMsg) throw Error(errMsg);
@@ -32,6 +33,7 @@ async function stringToHex(messages, modelName) {
   const messageInstance = $root.ChatMessage.create(message);
 
   const buffer = $root.ChatMessage.encode(messageInstance).finish();
+
   const hexString = (buffer.length.toString(16).padStart(10, '0') + buffer.toString('hex')).toUpperCase();
 
   return Buffer.from(hexString, 'hex');
