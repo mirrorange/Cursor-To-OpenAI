@@ -1,7 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const { v4: uuidv4 } = require('uuid');
-const { stringToHex, chunkToUtf8String, generateCursorChecksum } = require('./utils.js');
+const { generateCursorBody, chunkToUtf8String, generateCursorChecksum } = require('./utils.js');
 const app = express();
 
 app.use(express.json({ limit: '50mb' }));
@@ -38,8 +38,6 @@ app.post('/v1/chat/completions', async (req, res) => {
       });
     }
 
-    const hexData = await stringToHex(messages, model);
-
     const checksum = req.headers['x-cursor-checksum'] 
       ?? process.env['x-cursor-checksum'] 
       ?? generateCursorChecksum(authToken.trim());
@@ -66,9 +64,10 @@ app.post('/v1/chat/completions', async (req, res) => {
         'Host': 'api2.cursor.sh',
       },
       // 0x0A 0x1D cppExistingUserMarketingPopup
-      body: Buffer.from('0A1D6370704578697374696E67557365724D61726B6574696E67506F707570', 'hex').toString('utf8')
+      body: Buffer.from('0A1D6370704578697374696E67557365724D61726B6574696E67506F707570', 'hex')
     })
 
+    const cursorBody = generateCursorBody(messages, model);
     const response = await fetch('https://api2.cursor.sh/aiserver.v1.AiService/StreamChat', {
       method: 'POST',
       headers: {
@@ -81,14 +80,14 @@ app.post('/v1/chat/completions', async (req, res) => {
         'x-amzn-trace-id': `Root=${uuidv4()}`,
         //'x-client-key': clientKey,
         'x-cursor-checksum': checksum,
-        'x-cursor-client-version': '0.45.3',
+        'x-cursor-client-version': '0.45.4',
         'x-cursor-timezone': 'Asia/Shanghai',
         'x-ghost-mode': 'false',
         'x-request-id': uuidv4(),
         'x-session-id': sessionid,
         'Host': 'api2.cursor.sh',
       },
-      body: hexData,
+      body: cursorBody,
       timeout: {
         connect: 5000,
         read: 30000
@@ -104,13 +103,7 @@ app.post('/v1/chat/completions', async (req, res) => {
 
       try {
         for await (const chunk of response.body) {
-          let text = await chunkToUtf8String(chunk);
-
-          // Direct pass the value to downstream if fails to parse the chunk
-          //if (text.length == 0){
-          //  const textTostring = Buffer.from(chunk, 'hex').toString('utf8');
-          //  console.log(textTostring)
-          //}
+          let text = chunkToUtf8String(chunk);
 
           if (text.length > 0) {
             res.write(
@@ -146,7 +139,7 @@ app.post('/v1/chat/completions', async (req, res) => {
       try {
         let text = '';
         for await (const chunk of response.body) {
-          text += await chunkToUtf8String(chunk);
+          text += chunkToUtf8String(chunk);
         }
         // 对解析后的字符串进行进一步处理
         text = text.replace(/^.*<\|END_USER\|>/s, '');

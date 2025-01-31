@@ -5,15 +5,16 @@ const crypto = require('crypto');
 
 const regex = /<\|BEGIN_SYSTEM\|>.*?<\|END_SYSTEM\|>.*?<\|BEGIN_USER\|>.*?<\|END_USER\|>/s;
 
-async function stringToHex(messages, modelName) {
+function generateCursorBody(messages, modelName) {
+  
   const formattedMessages = messages.map((msg) => ({
     ...msg,
     role: msg.role === 'user' ? 1 : 2,
-    message_id: uuidv4(),
+    messageId: uuidv4(),
   }));
 
-  const message = {
-    messages: formattedMessages,
+  const chatBody = {
+    userMessages: formattedMessages,
     instructions: {
       instruction: 'Always respond in 中文',
     },
@@ -21,72 +22,70 @@ async function stringToHex(messages, modelName) {
       name: modelName,
       empty: '',
     },
-    unknown1: 1,
+    unknown13: 1,
     conversationId: uuidv4(),
-    unknown2: 1,
-    unknown3: 1,
-    unknown4: 0,
+    unknown16: 1,
+    unknown29: 1,
+    unknown31: 0,
   };
-  const errMsg = $root.ChatMessage.verify(message);
+
+  const errMsg = $root.ChatMessage.verify(chatBody);
   if (errMsg) throw Error(errMsg);
+  const chatMessageInstance = $root.ChatMessage.create(chatBody);
+  const buffer = $root.ChatMessage.encode(chatMessageInstance).finish();
 
-  const messageInstance = $root.ChatMessage.create(message);
-
-  const buffer = $root.ChatMessage.encode(messageInstance).finish();
-
-  const hexString = (buffer.length.toString(16).padStart(10, '0') + buffer.toString('hex')).toUpperCase();
-
-  return Buffer.from(hexString, 'hex');
+  const finalBody = Buffer.concat([
+    Buffer.from([0x00]),
+    Buffer.from(buffer.length.toString(16).padStart(8, '0'), 'hex'),
+    buffer
+  ])
+  return finalBody
 }
 
-async function chunkToUtf8String(chunk) {
+function chunkToUtf8String(chunk) {
+
+  const results = []
+  const buffer = Buffer.from(chunk, 'hex');
   try {
-    let hex = Buffer.from(chunk).toString('hex');
-
-    let offset = 0;
-    let results = [];
-
-    while (offset < hex.length) {
-      if (offset + 10 > hex.length) break;
-
-      const dataLength = parseInt(hex.slice(offset, offset + 10), 16);
-      offset += 10;
-
-      if (offset + dataLength * 2 > hex.length) break;
-
-      const messageHex = hex.slice(offset, offset + dataLength * 2);
-      offset += dataLength * 2;
-
-      const messageBuffer = Buffer.from(messageHex, 'hex');
-      const message = $root.ResMessage.decode(messageBuffer);
-      results.push(message.msg);
-    }
-
-    if (results.length == 0) {
-      return gunzip(chunk);
-    }
-    return results.join('');
-  } catch (err) {
-    return gunzip(chunk);
-  }
-}
-
-function gunzip(chunk) {
-  return new Promise((resolve, reject) => {
-    zlib.gunzip(chunk.slice(5), (err, decompressed) => {
-      if (err) {
-        resolve('');
-      } else {
-        const text = decompressed.toString('utf-8');
-        // 这里只是尝试解析错误数据，如果是包含了全量的返回结果直接忽略
-        if (regex.test(text)) {
-          resolve('');
-        } else {
-          resolve(text);
-        }
+    for(let i = 0; i < buffer.length; i++){
+      const magicNumber = parseInt(buffer.subarray(i, i + 1).toString('hex'), 16)
+      const dataLength = parseInt(buffer.subarray(i + 1, i + 5).toString('hex'), 16)
+      const data = buffer.subarray(i + 5, i + 5 + dataLength)
+      if(magicNumber == 0) {
+        const resMessage = $root.ResMessage.decode(data);
+        const content = resMessage.content
+        if(content !== undefined)
+          results.push(content)
       }
-    });
-  });
+      if(magicNumber == 1) {
+        const gunzipData = zlib.gunzipSync(data)
+        const resMessage = $root.ResMessage.decode(gunzipData);
+        const content = resMessage.content
+        // The prompt is not empty, but skip to handle this here.
+        const prompt = resMessage.prompt
+        if(content !== undefined)
+          results.push(content)
+      }
+      else { 
+        // Maybe error message
+        const message = data.toString('utf-8')
+        //console.log(message)
+      }
+
+      i += 5 + dataLength - 1
+    }
+  } catch (err) {
+    try {
+      if (results.length == 0) {
+        const message = zlib.gunzipSync(chunk.subarray(5)).toString('utf-8')
+        results.push(message)
+      }  
+    } catch(err){
+      //
+    }
+  }
+  
+  return results.join('')
 }
 
 function getRandomIDPro({ size, dictType, customDict }) {
@@ -147,7 +146,7 @@ function generateCursorChecksum(token) {
 }
 
 module.exports = {
-  stringToHex,
+  generateCursorBody,
   chunkToUtf8String,
   getRandomIDPro,
   generateCursorChecksum,

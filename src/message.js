@@ -15,14 +15,14 @@ $root.ChatMessage = (function() {
      * Properties of a ChatMessage.
      * @exports IChatMessage
      * @interface IChatMessage
-     * @property {Array.<ChatMessage.IUserMessage>|null} [messages] ChatMessage messages
+     * @property {Array.<ChatMessage.IUserMessage>|null} [userMessages] ChatMessage userMessages
      * @property {ChatMessage.IInstructions|null} [instructions] ChatMessage instructions
      * @property {ChatMessage.IModel|null} [model] ChatMessage model
-     * @property {number|null} [unknown1] ChatMessage unknown1
+     * @property {number|null} [unknown13] ChatMessage unknown13
      * @property {string|null} [conversationId] ChatMessage conversationId
-     * @property {number|null} [unknown2] ChatMessage unknown2
-     * @property {number|null} [unknown3] ChatMessage unknown3
-     * @property {number|null} [unknown4] ChatMessage unknown4
+     * @property {number|null} [unknown16] ChatMessage unknown16
+     * @property {number|null} [unknown29] ChatMessage unknown29
+     * @property {number|null} [unknown31] ChatMessage unknown31
      */
 
     /**
@@ -34,7 +34,7 @@ $root.ChatMessage = (function() {
      * @param {IChatMessage=} [properties] Properties to set
      */
     function ChatMessage(properties) {
-        this.messages = [];
+        this.userMessages = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -42,12 +42,12 @@ $root.ChatMessage = (function() {
     }
 
     /**
-     * ChatMessage messages.
-     * @member {Array.<ChatMessage.IUserMessage>} messages
+     * ChatMessage userMessages.
+     * @member {Array.<ChatMessage.IUserMessage>} userMessages
      * @memberof ChatMessage
      * @instance
      */
-    ChatMessage.prototype.messages = $util.emptyArray;
+    ChatMessage.prototype.userMessages = $util.emptyArray;
 
     /**
      * ChatMessage instructions.
@@ -66,12 +66,12 @@ $root.ChatMessage = (function() {
     ChatMessage.prototype.model = null;
 
     /**
-     * ChatMessage unknown1.
-     * @member {number} unknown1
+     * ChatMessage unknown13.
+     * @member {number} unknown13
      * @memberof ChatMessage
      * @instance
      */
-    ChatMessage.prototype.unknown1 = 0;
+    ChatMessage.prototype.unknown13 = 0;
 
     /**
      * ChatMessage conversationId.
@@ -82,28 +82,28 @@ $root.ChatMessage = (function() {
     ChatMessage.prototype.conversationId = "";
 
     /**
-     * ChatMessage unknown2.
-     * @member {number} unknown2
+     * ChatMessage unknown16.
+     * @member {number} unknown16
      * @memberof ChatMessage
      * @instance
      */
-    ChatMessage.prototype.unknown2 = 0;
+    ChatMessage.prototype.unknown16 = 0;
 
     /**
-     * ChatMessage unknown3.
-     * @member {number} unknown3
+     * ChatMessage unknown29.
+     * @member {number} unknown29
      * @memberof ChatMessage
      * @instance
      */
-    ChatMessage.prototype.unknown3 = 0;
+    ChatMessage.prototype.unknown29 = 0;
 
     /**
-     * ChatMessage unknown4.
-     * @member {number} unknown4
+     * ChatMessage unknown31.
+     * @member {number} unknown31
      * @memberof ChatMessage
      * @instance
      */
-    ChatMessage.prototype.unknown4 = 0;
+    ChatMessage.prototype.unknown31 = 0;
 
     /**
      * Creates a new ChatMessage instance using the specified properties.
@@ -129,23 +129,23 @@ $root.ChatMessage = (function() {
     ChatMessage.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.messages != null && message.messages.length)
-            for (var i = 0; i < message.messages.length; ++i)
-                $root.ChatMessage.UserMessage.encode(message.messages[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.userMessages != null && message.userMessages.length)
+            for (var i = 0; i < message.userMessages.length; ++i)
+                $root.ChatMessage.UserMessage.encode(message.userMessages[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
         if (message.instructions != null && Object.hasOwnProperty.call(message, "instructions"))
             $root.ChatMessage.Instructions.encode(message.instructions, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
         if (message.model != null && Object.hasOwnProperty.call(message, "model"))
             $root.ChatMessage.Model.encode(message.model, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
-        if (message.unknown1 != null && Object.hasOwnProperty.call(message, "unknown1"))
-            writer.uint32(/* id 13, wireType 0 =*/104).int32(message.unknown1);
+        if (message.unknown13 != null && Object.hasOwnProperty.call(message, "unknown13"))
+            writer.uint32(/* id 13, wireType 0 =*/104).uint32(message.unknown13);
         if (message.conversationId != null && Object.hasOwnProperty.call(message, "conversationId"))
             writer.uint32(/* id 15, wireType 2 =*/122).string(message.conversationId);
-        if (message.unknown2 != null && Object.hasOwnProperty.call(message, "unknown2"))
-            writer.uint32(/* id 16, wireType 0 =*/128).int32(message.unknown2);
-        if (message.unknown3 != null && Object.hasOwnProperty.call(message, "unknown3"))
-            writer.uint32(/* id 29, wireType 0 =*/232).int32(message.unknown3);
-        if (message.unknown4 != null && Object.hasOwnProperty.call(message, "unknown4"))
-            writer.uint32(/* id 31, wireType 0 =*/248).int32(message.unknown4);
+        if (message.unknown16 != null && Object.hasOwnProperty.call(message, "unknown16"))
+            writer.uint32(/* id 16, wireType 0 =*/128).uint32(message.unknown16);
+        if (message.unknown29 != null && Object.hasOwnProperty.call(message, "unknown29"))
+            writer.uint32(/* id 29, wireType 0 =*/232).uint32(message.unknown29);
+        if (message.unknown31 != null && Object.hasOwnProperty.call(message, "unknown31"))
+            writer.uint32(/* id 31, wireType 0 =*/248).uint32(message.unknown31);
         return writer;
     };
 
@@ -181,9 +181,9 @@ $root.ChatMessage = (function() {
             var tag = reader.uint32();
             switch (tag >>> 3) {
             case 2: {
-                    if (!(message.messages && message.messages.length))
-                        message.messages = [];
-                    message.messages.push($root.ChatMessage.UserMessage.decode(reader, reader.uint32()));
+                    if (!(message.userMessages && message.userMessages.length))
+                        message.userMessages = [];
+                    message.userMessages.push($root.ChatMessage.UserMessage.decode(reader, reader.uint32()));
                     break;
                 }
             case 4: {
@@ -195,7 +195,7 @@ $root.ChatMessage = (function() {
                     break;
                 }
             case 13: {
-                    message.unknown1 = reader.int32();
+                    message.unknown13 = reader.uint32();
                     break;
                 }
             case 15: {
@@ -203,15 +203,15 @@ $root.ChatMessage = (function() {
                     break;
                 }
             case 16: {
-                    message.unknown2 = reader.int32();
+                    message.unknown16 = reader.uint32();
                     break;
                 }
             case 29: {
-                    message.unknown3 = reader.int32();
+                    message.unknown29 = reader.uint32();
                     break;
                 }
             case 31: {
-                    message.unknown4 = reader.int32();
+                    message.unknown31 = reader.uint32();
                     break;
                 }
             default:
@@ -249,13 +249,13 @@ $root.ChatMessage = (function() {
     ChatMessage.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.messages != null && message.hasOwnProperty("messages")) {
-            if (!Array.isArray(message.messages))
-                return "messages: array expected";
-            for (var i = 0; i < message.messages.length; ++i) {
-                var error = $root.ChatMessage.UserMessage.verify(message.messages[i]);
+        if (message.userMessages != null && message.hasOwnProperty("userMessages")) {
+            if (!Array.isArray(message.userMessages))
+                return "userMessages: array expected";
+            for (var i = 0; i < message.userMessages.length; ++i) {
+                var error = $root.ChatMessage.UserMessage.verify(message.userMessages[i]);
                 if (error)
-                    return "messages." + error;
+                    return "userMessages." + error;
             }
         }
         if (message.instructions != null && message.hasOwnProperty("instructions")) {
@@ -268,21 +268,21 @@ $root.ChatMessage = (function() {
             if (error)
                 return "model." + error;
         }
-        if (message.unknown1 != null && message.hasOwnProperty("unknown1"))
-            if (!$util.isInteger(message.unknown1))
-                return "unknown1: integer expected";
+        if (message.unknown13 != null && message.hasOwnProperty("unknown13"))
+            if (!$util.isInteger(message.unknown13))
+                return "unknown13: integer expected";
         if (message.conversationId != null && message.hasOwnProperty("conversationId"))
             if (!$util.isString(message.conversationId))
                 return "conversationId: string expected";
-        if (message.unknown2 != null && message.hasOwnProperty("unknown2"))
-            if (!$util.isInteger(message.unknown2))
-                return "unknown2: integer expected";
-        if (message.unknown3 != null && message.hasOwnProperty("unknown3"))
-            if (!$util.isInteger(message.unknown3))
-                return "unknown3: integer expected";
-        if (message.unknown4 != null && message.hasOwnProperty("unknown4"))
-            if (!$util.isInteger(message.unknown4))
-                return "unknown4: integer expected";
+        if (message.unknown16 != null && message.hasOwnProperty("unknown16"))
+            if (!$util.isInteger(message.unknown16))
+                return "unknown16: integer expected";
+        if (message.unknown29 != null && message.hasOwnProperty("unknown29"))
+            if (!$util.isInteger(message.unknown29))
+                return "unknown29: integer expected";
+        if (message.unknown31 != null && message.hasOwnProperty("unknown31"))
+            if (!$util.isInteger(message.unknown31))
+                return "unknown31: integer expected";
         return null;
     };
 
@@ -298,14 +298,14 @@ $root.ChatMessage = (function() {
         if (object instanceof $root.ChatMessage)
             return object;
         var message = new $root.ChatMessage();
-        if (object.messages) {
-            if (!Array.isArray(object.messages))
-                throw TypeError(".ChatMessage.messages: array expected");
-            message.messages = [];
-            for (var i = 0; i < object.messages.length; ++i) {
-                if (typeof object.messages[i] !== "object")
-                    throw TypeError(".ChatMessage.messages: object expected");
-                message.messages[i] = $root.ChatMessage.UserMessage.fromObject(object.messages[i]);
+        if (object.userMessages) {
+            if (!Array.isArray(object.userMessages))
+                throw TypeError(".ChatMessage.userMessages: array expected");
+            message.userMessages = [];
+            for (var i = 0; i < object.userMessages.length; ++i) {
+                if (typeof object.userMessages[i] !== "object")
+                    throw TypeError(".ChatMessage.userMessages: object expected");
+                message.userMessages[i] = $root.ChatMessage.UserMessage.fromObject(object.userMessages[i]);
             }
         }
         if (object.instructions != null) {
@@ -318,16 +318,16 @@ $root.ChatMessage = (function() {
                 throw TypeError(".ChatMessage.model: object expected");
             message.model = $root.ChatMessage.Model.fromObject(object.model);
         }
-        if (object.unknown1 != null)
-            message.unknown1 = object.unknown1 | 0;
+        if (object.unknown13 != null)
+            message.unknown13 = object.unknown13 >>> 0;
         if (object.conversationId != null)
             message.conversationId = String(object.conversationId);
-        if (object.unknown2 != null)
-            message.unknown2 = object.unknown2 | 0;
-        if (object.unknown3 != null)
-            message.unknown3 = object.unknown3 | 0;
-        if (object.unknown4 != null)
-            message.unknown4 = object.unknown4 | 0;
+        if (object.unknown16 != null)
+            message.unknown16 = object.unknown16 >>> 0;
+        if (object.unknown29 != null)
+            message.unknown29 = object.unknown29 >>> 0;
+        if (object.unknown31 != null)
+            message.unknown31 = object.unknown31 >>> 0;
         return message;
     };
 
@@ -345,35 +345,35 @@ $root.ChatMessage = (function() {
             options = {};
         var object = {};
         if (options.arrays || options.defaults)
-            object.messages = [];
+            object.userMessages = [];
         if (options.defaults) {
             object.instructions = null;
             object.model = null;
-            object.unknown1 = 0;
+            object.unknown13 = 0;
             object.conversationId = "";
-            object.unknown2 = 0;
-            object.unknown3 = 0;
-            object.unknown4 = 0;
+            object.unknown16 = 0;
+            object.unknown29 = 0;
+            object.unknown31 = 0;
         }
-        if (message.messages && message.messages.length) {
-            object.messages = [];
-            for (var j = 0; j < message.messages.length; ++j)
-                object.messages[j] = $root.ChatMessage.UserMessage.toObject(message.messages[j], options);
+        if (message.userMessages && message.userMessages.length) {
+            object.userMessages = [];
+            for (var j = 0; j < message.userMessages.length; ++j)
+                object.userMessages[j] = $root.ChatMessage.UserMessage.toObject(message.userMessages[j], options);
         }
         if (message.instructions != null && message.hasOwnProperty("instructions"))
             object.instructions = $root.ChatMessage.Instructions.toObject(message.instructions, options);
         if (message.model != null && message.hasOwnProperty("model"))
             object.model = $root.ChatMessage.Model.toObject(message.model, options);
-        if (message.unknown1 != null && message.hasOwnProperty("unknown1"))
-            object.unknown1 = message.unknown1;
+        if (message.unknown13 != null && message.hasOwnProperty("unknown13"))
+            object.unknown13 = message.unknown13;
         if (message.conversationId != null && message.hasOwnProperty("conversationId"))
             object.conversationId = message.conversationId;
-        if (message.unknown2 != null && message.hasOwnProperty("unknown2"))
-            object.unknown2 = message.unknown2;
-        if (message.unknown3 != null && message.hasOwnProperty("unknown3"))
-            object.unknown3 = message.unknown3;
-        if (message.unknown4 != null && message.hasOwnProperty("unknown4"))
-            object.unknown4 = message.unknown4;
+        if (message.unknown16 != null && message.hasOwnProperty("unknown16"))
+            object.unknown16 = message.unknown16;
+        if (message.unknown29 != null && message.hasOwnProperty("unknown29"))
+            object.unknown29 = message.unknown29;
+        if (message.unknown31 != null && message.hasOwnProperty("unknown31"))
+            object.unknown31 = message.unknown31;
         return object;
     };
 
@@ -1319,7 +1319,7 @@ $root.ChatMessage = (function() {
             if (message.content != null && Object.hasOwnProperty.call(message, "content"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.content);
             if (message.role != null && Object.hasOwnProperty.call(message, "role"))
-                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.role);
+                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.role);
             if (message.messageId != null && Object.hasOwnProperty.call(message, "messageId"))
                 writer.uint32(/* id 13, wireType 2 =*/106).string(message.messageId);
             return writer;
@@ -1361,7 +1361,7 @@ $root.ChatMessage = (function() {
                         break;
                     }
                 case 2: {
-                        message.role = reader.int32();
+                        message.role = reader.uint32();
                         break;
                     }
                 case 13: {
@@ -1430,7 +1430,7 @@ $root.ChatMessage = (function() {
             if (object.content != null)
                 message.content = String(object.content);
             if (object.role != null)
-                message.role = object.role | 0;
+                message.role = object.role >>> 0;
             if (object.messageId != null)
                 message.messageId = String(object.messageId);
             return message;
@@ -1931,7 +1931,9 @@ $root.ResMessage = (function() {
      * Properties of a ResMessage.
      * @exports IResMessage
      * @interface IResMessage
-     * @property {string|null} [msg] ResMessage msg
+     * @property {string|null} [content] ResMessage content
+     * @property {string|null} [empty] ResMessage empty
+     * @property {string|null} [prompt] ResMessage prompt
      */
 
     /**
@@ -1950,12 +1952,28 @@ $root.ResMessage = (function() {
     }
 
     /**
-     * ResMessage msg.
-     * @member {string} msg
+     * ResMessage content.
+     * @member {string} content
      * @memberof ResMessage
      * @instance
      */
-    ResMessage.prototype.msg = "";
+    ResMessage.prototype.content = "";
+
+    /**
+     * ResMessage empty.
+     * @member {string} empty
+     * @memberof ResMessage
+     * @instance
+     */
+    ResMessage.prototype.empty = "";
+
+    /**
+     * ResMessage prompt.
+     * @member {string} prompt
+     * @memberof ResMessage
+     * @instance
+     */
+    ResMessage.prototype.prompt = "";
 
     /**
      * Creates a new ResMessage instance using the specified properties.
@@ -1981,8 +1999,12 @@ $root.ResMessage = (function() {
     ResMessage.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.msg != null && Object.hasOwnProperty.call(message, "msg"))
-            writer.uint32(/* id 1, wireType 2 =*/10).string(message.msg);
+        if (message.content != null && Object.hasOwnProperty.call(message, "content"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.content);
+        if (message.empty != null && Object.hasOwnProperty.call(message, "empty"))
+            writer.uint32(/* id 4, wireType 2 =*/34).string(message.empty);
+        if (message.prompt != null && Object.hasOwnProperty.call(message, "prompt"))
+            writer.uint32(/* id 5, wireType 2 =*/42).string(message.prompt);
         return writer;
     };
 
@@ -2018,7 +2040,15 @@ $root.ResMessage = (function() {
             var tag = reader.uint32();
             switch (tag >>> 3) {
             case 1: {
-                    message.msg = reader.string();
+                    message.content = reader.string();
+                    break;
+                }
+            case 4: {
+                    message.empty = reader.string();
+                    break;
+                }
+            case 5: {
+                    message.prompt = reader.string();
                     break;
                 }
             default:
@@ -2056,9 +2086,15 @@ $root.ResMessage = (function() {
     ResMessage.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.msg != null && message.hasOwnProperty("msg"))
-            if (!$util.isString(message.msg))
-                return "msg: string expected";
+        if (message.content != null && message.hasOwnProperty("content"))
+            if (!$util.isString(message.content))
+                return "content: string expected";
+        if (message.empty != null && message.hasOwnProperty("empty"))
+            if (!$util.isString(message.empty))
+                return "empty: string expected";
+        if (message.prompt != null && message.hasOwnProperty("prompt"))
+            if (!$util.isString(message.prompt))
+                return "prompt: string expected";
         return null;
     };
 
@@ -2074,8 +2110,12 @@ $root.ResMessage = (function() {
         if (object instanceof $root.ResMessage)
             return object;
         var message = new $root.ResMessage();
-        if (object.msg != null)
-            message.msg = String(object.msg);
+        if (object.content != null)
+            message.content = String(object.content);
+        if (object.empty != null)
+            message.empty = String(object.empty);
+        if (object.prompt != null)
+            message.prompt = String(object.prompt);
         return message;
     };
 
@@ -2092,10 +2132,17 @@ $root.ResMessage = (function() {
         if (!options)
             options = {};
         var object = {};
-        if (options.defaults)
-            object.msg = "";
-        if (message.msg != null && message.hasOwnProperty("msg"))
-            object.msg = message.msg;
+        if (options.defaults) {
+            object.content = "";
+            object.empty = "";
+            object.prompt = "";
+        }
+        if (message.content != null && message.hasOwnProperty("content"))
+            object.content = message.content;
+        if (message.empty != null && message.hasOwnProperty("empty"))
+            object.empty = message.empty;
+        if (message.prompt != null && message.hasOwnProperty("prompt"))
+            object.prompt = message.prompt;
         return object;
     };
 
