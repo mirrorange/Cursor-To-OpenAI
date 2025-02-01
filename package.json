@@ -1,6 +1,6 @@
 {
   "name": "cursor-to-openai",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Cursor to OpenAPI",
   "author": "JiuZ-Chn",
   "private": false,
@@ -15,6 +15,11 @@
     "uuid": "11.0.5"
   },
   "scripts": {
+    "proto": "npx pbjs -t static-module -w commonjs -o src/message.js src/message.proto",
     "start": "node src/index.js"
+  },
+  "devDependencies": {
+    "protobufjs-cli": "^1.1.3"
   }
+
 }

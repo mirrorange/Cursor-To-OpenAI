@@ -137,15 +137,15 @@ $root.ChatMessage = (function() {
         if (message.model != null && Object.hasOwnProperty.call(message, "model"))
             $root.ChatMessage.Model.encode(message.model, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
         if (message.unknown13 != null && Object.hasOwnProperty.call(message, "unknown13"))
-            writer.uint32(/* id 13, wireType 0 =*/104).uint32(message.unknown13);
+            writer.uint32(/* id 13, wireType 0 =*/104).int32(message.unknown13);
         if (message.conversationId != null && Object.hasOwnProperty.call(message, "conversationId"))
             writer.uint32(/* id 15, wireType 2 =*/122).string(message.conversationId);
         if (message.unknown16 != null && Object.hasOwnProperty.call(message, "unknown16"))
-            writer.uint32(/* id 16, wireType 0 =*/128).uint32(message.unknown16);
+            writer.uint32(/* id 16, wireType 0 =*/128).int32(message.unknown16);
         if (message.unknown29 != null && Object.hasOwnProperty.call(message, "unknown29"))
-            writer.uint32(/* id 29, wireType 0 =*/232).uint32(message.unknown29);
+            writer.uint32(/* id 29, wireType 0 =*/232).int32(message.unknown29);
         if (message.unknown31 != null && Object.hasOwnProperty.call(message, "unknown31"))
-            writer.uint32(/* id 31, wireType 0 =*/248).uint32(message.unknown31);
+            writer.uint32(/* id 31, wireType 0 =*/248).int32(message.unknown31);
         return writer;
     };
 
@@ -195,7 +195,7 @@ $root.ChatMessage = (function() {
                     break;
                 }
             case 13: {
-                    message.unknown13 = reader.uint32();
+                    message.unknown13 = reader.int32();
                     break;
                 }
             case 15: {
@@ -203,15 +203,15 @@ $root.ChatMessage = (function() {
                     break;
                 }
             case 16: {
-                    message.unknown16 = reader.uint32();
+                    message.unknown16 = reader.int32();
                     break;
                 }
             case 29: {
-                    message.unknown29 = reader.uint32();
+                    message.unknown29 = reader.int32();
                     break;
                 }
             case 31: {
-                    message.unknown31 = reader.uint32();
+                    message.unknown31 = reader.int32();
                     break;
                 }
             default:
@@ -319,15 +319,15 @@ $root.ChatMessage = (function() {
             message.model = $root.ChatMessage.Model.fromObject(object.model);
         }
         if (object.unknown13 != null)
-            message.unknown13 = object.unknown13 >>> 0;
+            message.unknown13 = object.unknown13 | 0;
         if (object.conversationId != null)
             message.conversationId = String(object.conversationId);
         if (object.unknown16 != null)
-            message.unknown16 = object.unknown16 >>> 0;
+            message.unknown16 = object.unknown16 | 0;
         if (object.unknown29 != null)
-            message.unknown29 = object.unknown29 >>> 0;
+            message.unknown29 = object.unknown29 | 0;
         if (object.unknown31 != null)
-            message.unknown31 = object.unknown31 >>> 0;
+            message.unknown31 = object.unknown31 | 0;
         return message;
     };
 
@@ -1319,7 +1319,7 @@ $root.ChatMessage = (function() {
             if (message.content != null && Object.hasOwnProperty.call(message, "content"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.content);
             if (message.role != null && Object.hasOwnProperty.call(message, "role"))
-                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.role);
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.role);
             if (message.messageId != null && Object.hasOwnProperty.call(message, "messageId"))
                 writer.uint32(/* id 13, wireType 2 =*/106).string(message.messageId);
             return writer;
@@ -1361,7 +1361,7 @@ $root.ChatMessage = (function() {
                         break;
                     }
                 case 2: {
-                        message.role = reader.uint32();
+                        message.role = reader.int32();
                         break;
                     }
                 case 13: {
@@ -1430,7 +1430,7 @@ $root.ChatMessage = (function() {
             if (object.content != null)
                 message.content = String(object.content);
             if (object.role != null)
-                message.role = object.role >>> 0;
+                message.role = object.role | 0;
             if (object.messageId != null)
                 message.messageId = String(object.messageId);
             return message;

@@ -23,7 +23,7 @@ message ChatMessage {
 
   message UserMessage {
     string content = 1;
-    uint32 role = 2;
+    int32 role = 2;
     string messageId = 13;
   }
 
@@ -40,16 +40,15 @@ message ChatMessage {
   repeated UserMessage userMessages = 2;
   Instructions instructions = 4;
   Model model = 7;
-  uint32 unknown13 = 13;
+  int32 unknown13 = 13;
   string conversationId = 15;
-  uint32 unknown16 = 16;
-  uint32 unknown29 = 29;
-  uint32 unknown31 = 31;
+  int32 unknown16 = 16;
+  int32 unknown29 = 29;
+  int32 unknown31 = 31;
 }
 
 message ResMessage {
   string content = 1;
-
   string empty = 4;
   string prompt = 5;
 }

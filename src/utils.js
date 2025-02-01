@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const regex = /<\|BEGIN_SYSTEM\|>.*?<\|END_SYSTEM\|>.*?<\|BEGIN_USER\|>.*?<\|END_USER\|>/s;
 
 function generateCursorBody(messages, modelName) {
-  
+
   const formattedMessages = messages.map((msg) => ({
     ...msg,
     role: msg.role === 'user' ? 1 : 2,
@@ -32,13 +32,19 @@ function generateCursorBody(messages, modelName) {
   const errMsg = $root.ChatMessage.verify(chatBody);
   if (errMsg) throw Error(errMsg);
   const chatMessageInstance = $root.ChatMessage.create(chatBody);
-  const buffer = $root.ChatMessage.encode(chatMessageInstance).finish();
+  let buffer = $root.ChatMessage.encode(chatMessageInstance).finish();
+  let magicNumber = 0x00
+  if (formattedMessages.length >= 5){
+    buffer = zlib.gzipSync(buffer)
+    magicNumber = 0x01
+  }
 
   const finalBody = Buffer.concat([
-    Buffer.from([0x00]),
+    Buffer.from([magicNumber]),
     Buffer.from(buffer.length.toString(16).padStart(8, '0'), 'hex'),
     buffer
   ])
+
   return finalBody
 }
 
@@ -46,6 +52,7 @@ function chunkToUtf8String(chunk) {
 
   const results = []
   const buffer = Buffer.from(chunk, 'hex');
+
   try {
     for(let i = 0; i < buffer.length; i++){
       const magicNumber = parseInt(buffer.subarray(i, i + 1).toString('hex'), 16)
@@ -84,7 +91,7 @@ function chunkToUtf8String(chunk) {
       //
     }
   }
-  
+
   return results.join('')
 }
 
