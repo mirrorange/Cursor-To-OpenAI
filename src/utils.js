@@ -5,7 +5,7 @@ const crypto = require('crypto');
 
 const regex = /<\|BEGIN_SYSTEM\|>.*?<\|END_SYSTEM\|>.*?<\|BEGIN_USER\|>.*?<\|END_USER\|>/s;
 
-function generateCursorBody(messages, modelName) {
+function generateCursorBody(messages, modelName, customInstructions) {
 
   const formattedMessages = messages.map((msg) => ({
     ...msg,
@@ -16,7 +16,7 @@ function generateCursorBody(messages, modelName) {
   const chatBody = {
     userMessages: formattedMessages,
     instructions: {
-      instruction: 'Always respond in 中文',
+      instruction: customInstructions || 'Respond in the same language as the user by default.',
     },
     model: {
       name: modelName,
@@ -152,9 +152,50 @@ function generateCursorChecksum(token) {
   return `${encodedChecksum}${machineId}/${macMachineId}`;
 }
 
+const preprocessMessages = (messages, regexRules = []) => {
+  return messages.map((message, index) => {
+    let content = Array.isArray(message.content)
+      ? message.content.map((c) => c.text).join("\n")
+      : message.content;
+
+    for (const rule of regexRules) {
+      const range = rule.range || "0:";
+      const [start, end] = range.split("-").map((n) => {
+        if (n === "") return null;
+        const num = parseInt(n);
+        return num < 0 ? messages.length + num : num;
+      });
+
+      const isInRange = (index) => {
+        const normalizedStart = Math.min(start ?? 0, end ?? messages.length);
+        const normalizedEnd = Math.max(end ?? messages.length, start ?? 0);
+        return index >= normalizedStart && index <= normalizedEnd;
+      };
+
+      if (isInRange(index)) {
+        content = content.replace(
+          new RegExp(rule.pattern, rule.flags || "g"),
+          rule.replacement
+        );
+      }
+    }
+
+    return {
+      ...message,
+      content: content,
+    };
+  });
+};
+
+function decodeBase64(base64) {
+  return base64 ? Buffer.from(base64, "base64").toString("utf-8") : ""; 
+}
+
 module.exports = {
   generateCursorBody,
   chunkToUtf8String,
   getRandomIDPro,
   generateCursorChecksum,
+  preprocessMessages,
+  decodeBase64,
 };

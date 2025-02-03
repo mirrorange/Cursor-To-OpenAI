@@ -1,7 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const { v4: uuidv4 } = require('uuid');
-const { generateCursorBody, chunkToUtf8String, generateCursorChecksum } = require('./utils.js');
+const { generateCursorBody, chunkToUtf8String, generateCursorChecksum, preprocessMessages, decodeBase64 } = require('./utils.js');
+const StreamProcessor = require("./processor.js");
 const app = express();
 
 app.use(express.json({ limit: '50mb' }));
@@ -38,6 +39,20 @@ app.post('/v1/chat/completions', async (req, res) => {
       });
     }
 
+    const regexRules = JSON.parse(decodeBase64(req.headers["x-regex"]) || "[]");
+    const inputRegex = regexRules.filter((rule) =>
+      rule.scope.includes("input")
+    );
+    const outputRegex = regexRules.filter((rule) =>
+      rule.scope.includes("output")
+    );
+    const customInstructions = decodeBase64(req.headers["x-instructions"]) || ""
+
+    const stop = req.body.stop || JSON.parse(decodeBase64(req.headers["x-stop"]) || "[]");
+    const start = req.body.start || JSON.parse(decodeBase64(req.headers["x-start"]) || "[]");
+
+    const preprocessedMessages = preprocessMessages(messages, inputRegex);
+
     const checksum = req.headers['x-cursor-checksum'] 
       ?? process.env['x-cursor-checksum'] 
       ?? generateCursorChecksum(authToken.trim());
@@ -67,7 +82,7 @@ app.post('/v1/chat/completions', async (req, res) => {
       body: Buffer.from('0A1D6370704578697374696E67557365724D61726B6574696E67506F707570', 'hex')
     })
 
-    const cursorBody = generateCursorBody(messages, model);
+    const cursorBody = generateCursorBody(preprocessedMessages, model, customInstructions);
     const response = await fetch('https://api2.cursor.sh/aiserver.v1.AiService/StreamChat', {
       method: 'POST',
       headers: {
@@ -94,6 +109,12 @@ app.post('/v1/chat/completions', async (req, res) => {
       }
     });
 
+    const streamProcessor = new StreamProcessor(response, {
+      start: start,
+      stop: stop,
+      outputRegex: outputRegex,
+    });
+
     if (stream) {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
@@ -102,8 +123,7 @@ app.post('/v1/chat/completions', async (req, res) => {
       const responseId = `chatcmpl-${uuidv4()}`;
 
       try {
-        for await (const chunk of response.body) {
-          let text = chunkToUtf8String(chunk);
+        for await (const text of streamProcessor.processStream()) {
 
           if (text.length > 0) {
             res.write(
@@ -137,9 +157,9 @@ app.post('/v1/chat/completions', async (req, res) => {
       }
     } else {
       try {
-        let text = '';
-        for await (const chunk of response.body) {
-          text += chunkToUtf8String(chunk);
+        let text = "";
+        for await (const part of streamProcessor.processStream()) {
+          text += part;
         }
         // 对解析后的字符串进行进一步处理
         text = text.replace(/^.*<\|END_USER\|>/s, '');
